@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script type="text/javascript" src="vue2.4.2.js"></script>
+  <title>Hello Vue!</title>
+</head>
+<body>
+  <div id="app">
+    {{course}} - {{date}}
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        course: 'vue.js 2',
+        date: Date.now()
+      }
+    })
+  </script>
+</body>
+</html>
