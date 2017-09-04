@@ -3,21 +3,79 @@
 <head>
   <title></title>
   <script type="text/javascript" src="vue2.4.2.js"></script>
+  <link rel="stylesheet" href="App.css">
   <title>Hello Vue!</title>
 </head>
 <body>
   <div id="app">
-    {{course}} - {{date}}
+    <div class="app-content">
+      <div class="todobox">
+        <div id="add-new-todo">
+        <h2>{{todoTitle}} </h2>
+
+        </div>
+        <div class="todolists">
+          <ul class="small-box"
+            v-on:click="{active = !active}"
+            v-bind:class="{active: active}"
+          >
+            <li v-for="todoItem in todoItems">
+              <h3>{{todoItem.title}}</h3>
+
+            </li>
+          </ul>
+          <form v-on:submit.prevent="addItem()" >
+            <label>
+              Add New Item:
+            </label>
+              <input type="text" title="itemTitle" placeholder="item title" v-model="todoItem.title">
+            <button type="submit">Ajouter</button>
+          </form>
+
+<!--           <div class="todo-form">
+            <form v-on:submit.prevent="addTodo()">
+              <h3>Add a new todo list</h3>
+              <label for="todoname">Add a new todo-list</label>
+              <input id="todoname" type="text" placeholder="todo name" v-model="todoName">
+              <button type="submit">Ajouter</button>
+            </form>
+
+          </div>
+ -->
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
   <script>
-    new Vue({
+    var vm = new Vue({
       el: '#app',
       data: {
-        course: 'vue.js 2',
-        date: Date.now()
+        todoTitle: "Here are your lists",
+        // item: {title},
+        todoName: "",
+        todos: [],
+        todoItem: {title:""},
+        todoItems: [],
+        active: false
+      },
+      methods: {
+        addTodo: function() {
+          this.todos.push({id: Date.now(), name: this.todoName});
+          this.todoName = null;
+        },
+        addItem: function() {
+          console.log(this.todoItem.title);
+          if(this.todoItem.title!="") {
+            this.todoItems.push({title: this.todoItem.title});
+          }
+          this.todoItem.title = "";
+        }
       }
     })
+
   </script>
 </body>
 </html>
