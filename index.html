@@ -3,6 +3,10 @@
 <head>
   <title></title>
   <script type="text/javascript" src="vue2.4.2.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
   <script src="https://use.fontawesome.com/513f7f9432.js"></script>
   <link rel="stylesheet" href="App.css">
   <title>Hello Vue!</title>
@@ -18,18 +22,20 @@
         <div class="todolists">
           <ul class="small-box">
             <li v-for="todoItem in todoItems"
-              v-bind:class="{active: todoItem.isInEditMode}" >
-              <span>
-                <h3><i
-                  class="fa fa-pencil-square-o"
-                  aria-hidden="true"
-                  v-on:click="switchMode(todoItem)"> {{todoItem.title}}</i>
+              v-bind:class="{active: todoItem.isInEditMode}"
+              v-on:click="switchMode(todoItem)">
+              <span >
+              {{'id="item ${todoItem.id}"'}}
+                <h3>
+                  <i class="fa fa-pencil-square-o" aria-hidden="true">
+                    {{todoItem.id}} - {{todoItem.name}}
+                  </i>
                 </h3>
               </span>
               <span v-if="todoItem.isInEditMode">
                 <form v-on:submit.prevent="editItem()" >
                   <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>
-                  <input type="text" title="itemTitle" placeholder="item title" v-model="todoItem.title">
+                  <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
                   <button type="submit">Modifier</button>
                 </form>
               </span>
@@ -40,7 +46,7 @@
             <label>
               Add New Item:
             </label>
-              <input type="text" title="itemTitle" placeholder="item title" v-model="todoItem.title">
+              <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
             <button type="submit">Ajouter</button>
           </form>
 
@@ -69,9 +75,34 @@
         // item: {title},
         todoName: "",
         todos: [],
-        todoItem: {title:""},
+        todoItem: {name:""},
         todoItems: [],
         active: false
+      },
+      created: function() {
+        let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
+        // let ajaxUrlDistant = 'https://test-rails-api.herokuapp.com/api/todos/todos';
+        var _this = this;
+        let data = null;
+        data = $.ajax({
+          type: "GET",
+          url: ajaxUrlLocal,
+          success: function(data){
+            _this.todoItems = data;
+          },
+          error: function(jqXHR){
+            console.log("error");
+          }
+        })
+        // .then(function(data) {
+
+        //   if(data.length) {
+        //     _this.setState({todoItems: data});
+        //   } else {
+        //     _this.setState({todoItems: [data]});
+        //   }
+        //   _this.setState({activeTodo: _this.state.todoItems[0].id});
+        // });
       },
       methods: {
         addTodo: function() {
@@ -79,16 +110,17 @@
           this.todoName = null;
         },
         addItem: function() {
-          console.log(this.todoItem.title);
-          if(this.todoItem.title!="") {
-            this.todoItems.push({id: Date.now(), title: this.todoItem.title, isInEditMode: false});
+          console.log(this.todoItem.name);
+          if(this.todoItem.name!="") {
+            this.todoItems.push({name: this.todoItem.name, isInEditMode: false});
           }
-          this.todoItem.title = "";
+          this.todoItem.name = "";
         },
         editItem: function(todoItem) {
           todoItem.isInEditMode = !todoItem.isInEditMode;
         },
         switchMode: function(todoItem) {
+          console.log(todoItem);
           todoItem.isInEditMode = !todoItem.isInEditMode;
           this.todoItems.map(function(item) {if(item.id !== todoItem.id){item.isInEditMode = false}});
         },
