@@ -3,6 +3,7 @@
 <head>
   <title></title>
   <script type="text/javascript" src="vue2.4.2.js"></script>
+  <script src="https://use.fontawesome.com/513f7f9432.js"></script>
   <link rel="stylesheet" href="App.css">
   <title>Hello Vue!</title>
 </head>
@@ -15,12 +16,23 @@
 
         </div>
         <div class="todolists">
-          <ul class="small-box"
-            v-on:click="{active = !active}"
-            v-bind:class="{active: active}"
-          >
-            <li v-for="todoItem in todoItems">
-              <h3>{{todoItem.title}}</h3>
+          <ul class="small-box">
+            <li v-for="todoItem in todoItems"
+              v-bind:class="{active: todoItem.isInEditMode}" >
+              <span>
+                <h3><i
+                  class="fa fa-pencil-square-o"
+                  aria-hidden="true"
+                  v-on:click="switchMode(todoItem)"> {{todoItem.title}}</i>
+                </h3>
+              </span>
+              <span v-if="todoItem.isInEditMode">
+                <form v-on:submit.prevent="editItem()" >
+                  <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>
+                  <input type="text" title="itemTitle" placeholder="item title" v-model="todoItem.title">
+                  <button type="submit">Modifier</button>
+                </form>
+              </span>
 
             </li>
           </ul>
@@ -69,9 +81,19 @@
         addItem: function() {
           console.log(this.todoItem.title);
           if(this.todoItem.title!="") {
-            this.todoItems.push({title: this.todoItem.title});
+            this.todoItems.push({id: Date.now(), title: this.todoItem.title, isInEditMode: false});
           }
           this.todoItem.title = "";
+        },
+        editItem: function(todoItem) {
+          todoItem.isInEditMode = !todoItem.isInEditMode;
+        },
+        switchMode: function(todoItem) {
+          todoItem.isInEditMode = !todoItem.isInEditMode;
+          this.todoItems.map(function(item) {if(item.id !== todoItem.id){item.isInEditMode = false}});
+        },
+        deleteItem: function(todoItem) {
+          this.todoItems = this.todoItems.filter(function(item) { return item.id !== todoItem.id});
         }
       }
     })
