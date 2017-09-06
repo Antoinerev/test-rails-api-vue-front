@@ -22,11 +22,11 @@
         <div class="todolists">
           <ul class="small-box">
             <li v-for="todoItem in todoItems"
-              v-bind:class="{active: todoItem.isInEditMode}"
-              v-on:click="switchMode(todoItem)">
+              v-on:click="activateTodo(todoItem)"
+              v-bind:class="{active: todoItem.isActive}">
               <span >
-              {{'id="item ${todoItem.id}"'}}
                 <h3>
+                  {{todoItem.isActive}}
                   <i class="fa fa-pencil-square-o" aria-hidden="true">
                     {{todoItem.id}} - {{todoItem.name}}
                   </i>
@@ -75,34 +75,32 @@
         // item: {title},
         todoName: "",
         todos: [],
-        todoItem: {name:""},
+        todoItem: {name:"", },
         todoItems: [],
-        active: false
+        active: false,
+        activeTodo: 1
       },
       created: function() {
         let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
         // let ajaxUrlDistant = 'https://test-rails-api.herokuapp.com/api/todos/todos';
         var _this = this;
-        let data = null;
-        data = $.ajax({
+        $.ajax({
           type: "GET",
           url: ajaxUrlLocal,
           success: function(data){
-            _this.todoItems = data;
           },
           error: function(jqXHR){
             console.log("error");
           }
         })
-        // .then(function(data) {
-
-        //   if(data.length) {
-        //     _this.setState({todoItems: data});
-        //   } else {
-        //     _this.setState({todoItems: [data]});
-        //   }
-        //   _this.setState({activeTodo: _this.state.todoItems[0].id});
-        // });
+        .then(function(data) {
+          if(data.length) {
+            _this.todoItems = data;
+          } else {
+            _this.todoItems = [data];
+          }
+          _this.todoItems.map(function(item) {item.isActive = false});
+        });
       },
       methods: {
         addTodo: function() {
@@ -123,6 +121,17 @@
           console.log(todoItem);
           todoItem.isInEditMode = !todoItem.isInEditMode;
           this.todoItems.map(function(item) {if(item.id !== todoItem.id){item.isInEditMode = false}});
+        },
+        activateTodo: function(todoItem) {
+          todoItem.isActive = true;
+          var index = this.todoItems.indexOf(todoItem);
+          this.todoItems.splice(index, 1);
+          this.todoItems.map(function(item) {
+            item.isActive = false
+          });
+          this.todoItems.splice(index, 0, todoItem);
+          // this.todoItems.push(todoItem).sort();
+
         },
         deleteItem: function(todoItem) {
           this.todoItems = this.todoItems.filter(function(item) { return item.id !== todoItem.id});
