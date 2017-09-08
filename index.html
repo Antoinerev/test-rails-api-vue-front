@@ -22,18 +22,19 @@
         <div class="todolists">
           <ul class="small-box">
             <li v-for="todoItem in todoItems"
-              v-on:click="activateTodo(todoItem)"
+
               v-bind:class="{active: todoItem.isActive}">
               <span >
                 <h3>
-                  {{todoItem.isActive}}
-                  <i class="fa fa-pencil-square-o" aria-hidden="true">
+                  <!-- {{todoItem.isActive}} -->
+                  <i class="fa fa-pencil-square-o" aria-hidden="true"
+                    v-on:click="activateTodo(todoItem)">
                     {{todoItem.id}} - {{todoItem.name}}
                   </i>
                 </h3>
               </span>
-              <span v-if="todoItem.isInEditMode">
-                <form v-on:submit.prevent="editItem()" >
+              <span v-if="todoItem.isActive">
+                <form v-on:submit.prevent="editItem(todoItem)" >
                   <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>
                   <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
                   <button type="submit">Modifier</button>
@@ -110,28 +111,33 @@
         addItem: function() {
           console.log(this.todoItem.name);
           if(this.todoItem.name!="") {
-            this.todoItems.push({name: this.todoItem.name, isInEditMode: false});
+            this.todoItems.push({name: this.todoItem.name, isActive: false});
           }
           this.todoItem.name = "";
         },
         editItem: function(todoItem) {
-          todoItem.isInEditMode = !todoItem.isInEditMode;
+          let ajaxEditUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
+          $.ajax({
+            type: "PATCH",
+            url: ajaxEditUrl,
+            data: todoItem,
+            success: function(data) {
+              // console.log("Successfully created gist at " + data.html_url);
+            }
+          });
         },
         switchMode: function(todoItem) {
           console.log(todoItem);
-          todoItem.isInEditMode = !todoItem.isInEditMode;
-          this.todoItems.map(function(item) {if(item.id !== todoItem.id){item.isInEditMode = false}});
+
+          this.todoItems.map(function(item) {if(item.id !== todoItem.id){item.isActive = false}});
         },
         activateTodo: function(todoItem) {
-          todoItem.isActive = true;
+          todoItem.isActive = !todoItem.isActive;
           var index = this.todoItems.indexOf(todoItem);
           this.todoItems.splice(index, 1);
-          this.todoItems.map(function(item) {
-            item.isActive = false
-          });
+          this.todoItems.map(function(item) {item.isActive = false});
           this.todoItems.splice(index, 0, todoItem);
           // this.todoItems.push(todoItem).sort();
-
         },
         deleteItem: function(todoItem) {
           this.todoItems = this.todoItems.filter(function(item) { return item.id !== todoItem.id});
