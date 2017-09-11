@@ -17,37 +17,19 @@
       <div class="todobox">
         <div id="add-new-todo">
         <h2>{{todoTitle}} </h2>
-        <test-global-cmp></test-global-cmp>
-        <my-cmp></my-cmp>
-        <my-cmp></my-cmp>
         </div>
         <div class="todolists">
           <ul class="small-box">
             <li v-for="todoItem in todoItems"
               v-bind:class="{active: todoItem.isActive}">
 
-              <item-cmp v-bind:todo-item="todoItem" inline-template>
-                <span>
-                  <h3>
-                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)">{{todoItem.id}} - {{todoItem.name}}
-                    </i>
-                  </h3>
-                </span>
-              </item-cmp>
+              <item-cmp v-bind:todo-item="todoItem"></item-cmp>
 
-              <item-form-cmp v-if="todoItem.isActive" v-bind:todo-item="todoItem" inline-template>
-                <span>
-                  <form v-on:submit.prevent="editItem(todoItem)" >
-                    <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>
-                    <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
-                    <button type="submit">Modifier</button>
-                  </form>
-                </span>
-              </item-form-cmp>
+              <item-form-cmp v-if="todoItem.isActive" v-bind:todo-item="todoItem"></item-form-cmp>
 
             </li>
           </ul>
-          <form v-on:submit.prevent="addItem()" >
+          <form v-on:submit.prevent="addItem(todoListId = 1)" >
             <label>
               Add New Item:
             </label>
@@ -73,14 +55,20 @@
   </div>
 
   <script>
-    Vue.component('test-global-cmp', {
-      template: '<div>Composant de test</div>'
-    });
+    // Vue.component('test-global-cmp', {
+    //   template: '<div>Composant de test</div>'
+    // });
 
-    var myCmp = {template: '<p>Composant local</p>'};
+    // var myCmp = {template: '<p>Composant local</p>'};
 
     var itemCmp = {
       props: ['todoItem'],
+      template:'<span>\
+                  <h3>\
+                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)">{{todoItem.id}} - {{todoItem.name}}\
+                    </i>\
+                  </h3>\
+                </span>',
       methods: {
         activateTodo: function(todoItem) {
           todoItem.isActive = !todoItem.isActive;
@@ -95,6 +83,13 @@
 
     var itemFormCmp = {
       props: ['todoItem'],
+      template:'<span>\
+                  <form v-on:submit.prevent="editItem(todoItem)" >\
+                    <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>\
+                    <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">\
+                    <button type="submit">Modifier</button>\
+                  </form>\
+                </span>',
       methods: {
         editItem: function(todoItem) {
           let ajaxEditUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
@@ -108,19 +103,29 @@
           });
         },
         deleteItem: function(todoItem) {
+          let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
           vm.todoItems = vm.todoItems.filter(function(item) { return item.id !== todoItem.id});
+          $.ajax({
+            type: "DELETE",
+            url: ajaxDeleteUrl,
+            // data: todoItem,
+            success: function(data) {
+              // console.log("Successfully created gist at " + data.html_url);
+            }
+          });
         }
       }
     };
 
     var vm = new Vue({
       el: '#app',
-      components: {'my-cmp': myCmp, 'item-cmp': itemCmp, 'item-form-cmp': itemFormCmp},
+      components: {'item-cmp': itemCmp, 'item-form-cmp': itemFormCmp},
       data: {
         todoTitle: "Here are your lists",
         // item: {title},
         todoName: "",
         todos: [],
+        todoListId: 0,
         todoItem: {name:"", },
         todoItems: [],
         active: false,
@@ -153,11 +158,28 @@
           this.todos.push({id: Date.now(), name: this.todoName});
           this.todoName = null;
         },
-        addItem: function() {
+        addItem: function(todoListId) {
           console.log(this.todoItem.name);
-          if(this.todoItem.name!="") {
-            this.todoItems.push({name: this.todoItem.name, isActive: false});
-          }
+          // if(this.todoItem.name!="") {
+          //   this.todoItems.push({name: this.todoItem.name, isActive: false});
+          // }
+          let ajaxNewUrl = "http://localhost:3000/api/todos/todos/"+todoListId+"/items/";
+          let _this = this;
+          let NewTodoItem = this.todoItem;
+          $.ajax({
+            type: "POST",
+            url: ajaxNewUrl,
+            data: NewTodoItem,
+            success: function(data){
+              // _this.todoItems = data.all_items;
+            },
+            error: function(jqXHR){
+              console.log("error");
+            }
+          })
+          .then(function(response) {
+            _this.todoItems = response.all_items;
+          });
           this.todoItem.name = "";
         }
       }
