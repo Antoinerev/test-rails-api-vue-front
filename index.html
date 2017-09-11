@@ -71,9 +71,10 @@
       props: ['todoItem'],
       template:'<span>\
                   <h3>\
-                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)">\
+                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)"> - \
                       <item-details :item="todoItem"></item-details> \
                     </i>\
+                     - <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>\
                   </h3>\
                 </span>',
       methods: {
@@ -84,6 +85,18 @@
           vm.todoItems.map(function(item) {item.isActive = false});
           vm.todoItems.splice(index, 0, todoItem);
           // this.todoItems.push(todoItem).sort();
+        },
+        deleteItem: function(todoItem) {
+          let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
+          vm.todoItems = vm.todoItems.filter(function(item) { return item.id !== todoItem.id});
+          $.ajax({
+            type: "DELETE",
+            url: ajaxDeleteUrl,
+            // data: todoItem,
+            success: function(data) {
+              // console.log("Successfully created gist at " + data.html_url);
+            }
+          });
         }
       }
     });
@@ -92,7 +105,6 @@
       props: ['todoItem'],
       template:'<span>\
                   <form v-on:submit.prevent="editItem(todoItem)" >\
-                    <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>\
                     <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">\
                     <button type="submit">Modifier</button>\
                   </form>\
@@ -104,18 +116,6 @@
             type: "PATCH",
             url: ajaxEditUrl,
             data: todoItem,
-            success: function(data) {
-              // console.log("Successfully created gist at " + data.html_url);
-            }
-          });
-        },
-        deleteItem: function(todoItem) {
-          let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
-          vm.todoItems = vm.todoItems.filter(function(item) { return item.id !== todoItem.id});
-          $.ajax({
-            type: "DELETE",
-            url: ajaxDeleteUrl,
-            // data: todoItem,
             success: function(data) {
               // console.log("Successfully created gist at " + data.html_url);
             }

@@ -5,6 +5,7 @@ body {
 }
 li {
   cursor: pointer;
+  list-style: none;
 }
 .App {
   text-align: center;
