@@ -15,41 +15,20 @@
   <div id="app">
     <div class="app-content">
       <div class="todobox">
-        <div id="add-new-todo">
-        <h2>{{todoTitle}} </h2>
-        </div>
-        <div class="todolists">
-          <ul class="small-box">
-            <li v-for="todoItem in todoItems"
-              v-bind:class="{active: todoItem.isActive}">
-
-              <item-cmp v-bind:todo-item="todoItem"></item-cmp>
-
-              <item-form-cmp v-if="todoItem.isActive" v-bind:todo-item="todoItem"></item-form-cmp>
-
-            </li>
-          </ul>
-          <form v-on:submit.prevent="addItem(todoListId = 1)" >
+        <ul> <!-- list of todos -->
+          <div v-for="todolist in todos">
+            <todolist v-bind:todolist="todolist"></todolist>
+          </div>
+        </ul>
+          <form v-on:submit.prevent="addItem(todoListId = 1)" >\
             <label>
               Add New Item:
             </label>
               <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
             <button type="submit">Ajouter</button>
           </form>
-
-<!--           <div class="todo-form">
-            <form v-on:submit.prevent="addTodo()">
-              <h3>Add a new todo list</h3>
-              <label for="todoname">Add a new todo-list</label>
-              <input id="todoname" type="text" placeholder="todo name" v-model="todoName">
-              <button type="submit">Ajouter</button>
-            </form>
-
-          </div>
- -->
-        </div>
+        </ul>
       </div>
-
     </div>
 
   </div>
@@ -61,30 +40,60 @@
 
     // var myCmp = {template: '<p>Composant local</p>'};
     //
+    Vue.component('todolist', {
+      props: ['todolist'],
+      template:'\
+        <li>\
+          <h2>{{todolist.title}} </h2>\
+          <todo-items v-bind:todolist="todolist"></todo-items>\
+        </li>'
+    });
+    Vue.component('todo-items', {
+      props: ['todolist'],
+      template: '\
+        <div class="todolists">\
+          <ul class="small-box">\
+            <li v-for="todoItem in todolist.all_items"\
+              v-bind:class="{active: todoItem.isActive}">\
+              <item-cmp v-bind:todo-item="todoItem" v-on:activateItem="activateItemInTodo(todoItem)"></item-cmp>\
+              <item-form-cmp v-if="todoItem.isActive" v-bind:todo-item="todoItem"></item-form-cmp>\
+            </li>\
+          </ul>\
+        </div>',
+      methods: {
+        activateItemInTodo: function(todoItem) {
+          console.log(this.todolist);
+          todoItem.isActive = !todoItem.isActive;
+          var index = this.todolist.all_items.indexOf(todoItem);
+          this.todolist.all_items.splice(index, 1);
+          this.todolist.all_items.map(function(item) {item.isActive = false});
+          this.todolist.all_items.splice(index, 0, todoItem);
+          // this.this.todolist.all_items.push(todoItem).sort();
+        }
+      }
+    });
+
     var itemDetails = {
       props: ['item'],
       template: '<span>{{item.id}} - {{item.name}}</span>'
     };
-
     Vue.component('item-cmp', {
       components: {'item-details': itemDetails},
       props: ['todoItem'],
       template:'<span>\
                   <h3>\
-                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)"> - \
+                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodoItem()"> - \
                       <item-details :item="todoItem"></item-details> \
                     </i>\
                      - <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem(todoItem)"></i>\
                   </h3>\
                 </span>',
       methods: {
+        activateTodoItem: function() {
+          this.$emit('activateItem');
+        },
         activateTodo: function(todoItem) {
-          todoItem.isActive = !todoItem.isActive;
-          var index = vm.todoItems.indexOf(todoItem);
-          vm.todoItems.splice(index, 1);
-          vm.todoItems.map(function(item) {item.isActive = false});
-          vm.todoItems.splice(index, 0, todoItem);
-          // this.todoItems.push(todoItem).sort();
+
         },
         deleteItem: function(todoItem) {
           let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
@@ -101,7 +110,8 @@
       }
     });
 
-    var itemFormCmp = {
+
+    Vue.component('item-form-cmp', {
       props: ['todoItem'],
       template:'<span>\
                   <form v-on:submit.prevent="editItem(todoItem)" >\
@@ -122,16 +132,16 @@
           });
         }
       }
-    };
+    });
 
     var vm = new Vue({
       el: '#app',
-      components: {'item-form-cmp': itemFormCmp},
       data: {
         todoTitle: "Here are your lists",
         // item: {title},
         todoName: "",
         todos: [],
+        todolist: null,
         todoListId: 0,
         todoItem: {name:"", },
         todoItems: [],
@@ -139,8 +149,8 @@
         activeTodo: 1
       },
       created: function() {
-        let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
-        // let ajaxUrlDistant = 'https://test-rails-api.herokuapp.com/api/todos/todos';
+        // let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
+        let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/';
         var _this = this;
         $.ajax({
           type: "GET",
@@ -153,11 +163,16 @@
         })
         .then(function(data) {
           if(data.length) {
-            _this.todoItems = data;
+            _this.todos = data;
           } else {
-            _this.todoItems = [data];
+            _this.todos = [data];
           }
-          _this.todoItems.map(function(item) {item.isActive = false});
+          _this.todos.map(function(todolist) {
+            todolist.all_items.map(function(item) {
+              item.isActive = false
+            });
+          });
+          console.log(_this.todos);
         });
       },
       methods: {
@@ -190,7 +205,7 @@
           this.todoItem.name = "";
         }
       }
-    })
+    });
 
   </script>
 </body>
