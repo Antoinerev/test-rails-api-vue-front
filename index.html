@@ -60,12 +60,19 @@
     // });
 
     // var myCmp = {template: '<p>Composant local</p>'};
+    //
+    var itemDetails = {
+      props: ['item'],
+      template: '<span>{{item.id}} - {{item.name}}</span>'
+    };
 
-    var itemCmp = {
+    Vue.component('item-cmp', {
+      components: {'item-details': itemDetails},
       props: ['todoItem'],
       template:'<span>\
                   <h3>\
-                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)">{{todoItem.id}} - {{todoItem.name}}\
+                    <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodo(todoItem)">\
+                      <item-details :item="todoItem"></item-details> \
                     </i>\
                   </h3>\
                 </span>',
@@ -79,7 +86,7 @@
           // this.todoItems.push(todoItem).sort();
         }
       }
-    };
+    });
 
     var itemFormCmp = {
       props: ['todoItem'],
@@ -119,7 +126,7 @@
 
     var vm = new Vue({
       el: '#app',
-      components: {'item-cmp': itemCmp, 'item-form-cmp': itemFormCmp},
+      components: {'item-form-cmp': itemFormCmp},
       data: {
         todoTitle: "Here are your lists",
         // item: {title},
