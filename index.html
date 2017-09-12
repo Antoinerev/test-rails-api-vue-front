@@ -94,7 +94,7 @@
         },
         deleteItemInTodo: function(todoItem) {
           var todoId = this.todolist.id;
-          let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/1/items/' + todoItem.id
+          let ajaxDeleteUrl = 'http://localhost:3000/api/todos/todos/'+ todoId +'/items/' + todoItem.id
           this.todolist.all_items = this.todolist.all_items.filter(function(item) { return item.id !== todoItem.id});
           $.ajax({
             type: "DELETE",
