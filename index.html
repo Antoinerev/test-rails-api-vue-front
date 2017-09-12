@@ -18,15 +18,15 @@
         <ul> <!-- list of todos -->
           <div v-for="todolist in todos" v-bind:class="{active: todolist.isActive}">
             <todolist v-bind:todolist="todolist" ></todolist>
+            <form v-if="todolist.isActive" v-on:submit.prevent="addItem(todolist)" >
+              <label>
+                Add New Item:
+              </label>
+                <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
+              <button type="submit">Ajouter</button>
+            </form>
           </div>
         </ul>
-          <form v-on:submit.prevent="addItem(todoListId = 1)" >\
-            <label>
-              Add New Item:
-            </label>
-              <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
-            <button type="submit">Ajouter</button>
-          </form>
         </ul>
       </div>
     </div>
@@ -195,12 +195,11 @@
           this.todos.push({id: Date.now(), name: this.todoName});
           this.todoName = null;
         },
-        addItem: function(todoListId) {
-          console.log(this.todoItem.name);
+        addItem: function(todolist) {
           // if(this.todoItem.name!="") {
           //   this.todoItems.push({name: this.todoItem.name, isActive: false});
           // }
-          let ajaxNewUrl = "http://localhost:3000/api/todos/todos/"+todoListId+"/items/";
+          let ajaxNewUrl = "http://localhost:3000/api/todos/todos/"+todolist.id+"/items/";
           let _this = this;
           let NewTodoItem = this.todoItem;
           $.ajax({
@@ -208,14 +207,16 @@
             url: ajaxNewUrl,
             data: NewTodoItem,
             success: function(data){
-              // _this.todoItems = data.all_items;
+              // console.log(data.length);
             },
             error: function(jqXHR){
               console.log("error");
             }
           })
           .then(function(response) {
-            _this.todoItems = response.all_items;
+            var lastIndex = response.all_items.length -1
+            var newItem = response.all_items[lastIndex];
+            todolist.all_items.splice(lastIndex, 0, newItem);
           });
           this.todoItem.name = "";
         }
