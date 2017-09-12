@@ -55,6 +55,8 @@
           vm.todos.splice(index, 1);
           vm.todos.map(function(todolist){todolist.isActive = false});
           vm.todos.splice(index, 0, todolist);
+
+          if(todolist.isActive) {vm.activeTodo = todolist.id};
         }
       }
     });
@@ -87,7 +89,6 @@
             url: ajaxEditUrl,
             data: todoItem,
             success: function(data) {
-              // console.log("Successfully created gist at " + data.html_url);
             }
           });
         },
@@ -100,7 +101,6 @@
             url: ajaxDeleteUrl,
             // data: todoItem,
             success: function(data) {
-              // console.log("Successfully created gist at " + data.html_url);
             }
           });
         }
@@ -159,7 +159,7 @@
         todoListId: 0,
         todoItem: {name:"", },
         todoItems: [],
-        active: false,
+        // active: false,
         activeTodo: 1
       },
       created: function() {
@@ -182,7 +182,11 @@
             _this.todos = [data];
           }
           _this.todos.map(function(todolist) {
-            todolist.isActive = false;
+            if(todolist.id === activeTodo) {
+              todolist.isActive = true;
+            } else {
+              todolist.isActive = false;
+            };
             todolist.all_items.map(function(item) {
               item.isActive = false
             });
