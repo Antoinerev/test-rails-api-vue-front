@@ -14,10 +14,10 @@
 <body>
   <div id="app">
     <div class="app-content">
-      <div class="todobox">
+      <div class="todobox" >
         <ul> <!-- list of todos -->
-          <div v-for="todolist in todos">
-            <todolist v-bind:todolist="todolist"></todolist>
+          <div v-for="todolist in todos" v-bind:class="{active: todolist.isActive}">
+            <todolist v-bind:todolist="todolist" ></todolist>
           </div>
         </ul>
           <form v-on:submit.prevent="addItem(todoListId = 1)" >\
@@ -44,9 +44,19 @@
       props: ['todolist'],
       template:'\
         <li>\
-          <h2>{{todolist.title}} </h2>\
+          <h2 v-on:click="activateTodolist">{{todolist.title}} </h2>\
           <todo-items v-bind:todolist="todolist"></todo-items>\
-        </li>'
+        </li>',
+      methods: {
+        activateTodolist: function() {
+          var todolist = this.todolist;
+          todolist.isActive = !todolist.isActive;
+          var index = vm.todos.indexOf(todolist);
+          vm.todos.splice(index, 1);
+          vm.todos.map(function(todolist){todolist.isActive = false});
+          vm.todos.splice(index, 0, todolist);
+        }
+      }
     });
     Vue.component('todo-items', {
       props: ['todolist'],
@@ -116,9 +126,6 @@
         activateTodoItem: function() {
           this.$emit('activateItem');
         },
-        activateTodo: function(todoItem) {
-
-        },
         deleteItem: function() {
           this.$emit('deleteItem');
         }
@@ -175,6 +182,7 @@
             _this.todos = [data];
           }
           _this.todos.map(function(todolist) {
+            todolist.isActive = false;
             todolist.all_items.map(function(item) {
               item.isActive = false
             });
