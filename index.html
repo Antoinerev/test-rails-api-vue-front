@@ -70,9 +70,14 @@
 
     Vue.component('todolist', {
       props: ['todolist'],
+      computed: {
+        todoTitleUpCased: function() {
+          return this.todolist.title.toUpperCase();
+        }
+      },
       template:'\
         <li>\
-          <h2 v-on:click="activateTodolist">{{todolist.title}} </h2>\
+          <h2 v-on:click="activateTodolist">{{todoTitleUpCased}} </h2>\
           <todo-items v-bind:todolist="todolist"></todo-items>\
         </li>',
       methods: {
