@@ -12,6 +12,7 @@
   <title>Hello Vue!</title>
 </head>
 <body>
+
   <div id="app">
     <div class="app-content">
       <div class="todobox" >
@@ -30,8 +31,40 @@
         </ul>
       </div>
     </div>
-
   </div>
+
+  <!-- template for the modal component -->
+  <script type="text/x-template" id="modal-template">
+    <transition name="modal">
+      <div class="modal-mask">
+        <div class="modal-wrapper">
+          <div class="modal-container">
+
+            <div class="modal-header">
+              <slot name="header">
+                default header
+              </slot>
+            </div>
+
+            <div class="modal-body">
+              <slot name="body">
+                default body
+              </slot>
+            </div>
+
+            <div class="modal-footer">
+              <slot name="footer">
+                default footer
+                <button class="modal-default-button" @click="$emit('close')">
+                  OK
+                </button>
+              </slot>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </script>
 
   <script>
     // Vue.component('test-global-cmp', {
@@ -107,11 +140,19 @@
       }
     });
 
+    Vue.component('modal', {
+      template: '#modal-template'
+    });
+
     var itemDetails = {
       props: ['item'],
       template: '<span>{{item.id}} - {{item.name}}</span>'
     };
+
     Vue.component('item-cmp', {
+      data: function() {
+        return {showModal: false}
+      },
       components: {'item-details': itemDetails},
       props: ['todoItem'],
       template:'<span>\
@@ -119,7 +160,19 @@
                     <i class="fa fa-pencil-square-o" aria-hidden="true" v-on:click="activateTodoItem()"> - \
                       <item-details :item="todoItem"></item-details> \
                     </i>\
-                     - <i class="fa fa-trash-o" aria-hidden="true" v-on:click="deleteItem"></i>\
+                     - <i class="fa fa-trash-o" aria-hidden="true" id="show-modal" @click="showModal = true"></i>\
+                    <modal v-if="showModal" @close="showModal = false">\
+                      <h3 slot="header">Confirmer la suppression ?</h3>\
+                      <div slot="body">La tache "{{todoItem.name}}" va être definitivement supprimée</div>\
+                      <p slot="footer">\
+                        <button class="modal-default-button" @click="showModal = false">\
+                          Annuler\
+                        </button>\
+                        <button class="modal-default-button" @click="deleteItem">\
+                          OK\
+                        </button>\
+                      </p>\
+                    </modal>\
                   </h3>\
                 </span>',
       methods: {
@@ -127,6 +180,7 @@
           this.$emit('activateItem');
         },
         deleteItem: function() {
+          this.showModal = false;
           this.$emit('deleteItem');
         }
       }
@@ -160,7 +214,7 @@
         todoItem: {name:"", },
         todoItems: [],
         // active: false,
-        activeTodo: 1
+        activeTodo: 0
       },
       created: function() {
         // let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
@@ -220,7 +274,7 @@
           .then(function(response) {
             var lastIndex = response.all_items.length -1
             var newItem = response.all_items[lastIndex];
-            todolist.all_items.splice(lastIndex, 0, newItem);
+            todolist.all_items.push(newItem);
           });
           this.todoItem.name = "";
         }
