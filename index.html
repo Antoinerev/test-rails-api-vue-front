@@ -197,9 +197,12 @@
 
     Vue.component('item-form-cmp', {
       props: ['todoItem'],
+      data: function() {
+        return {tooShortAlert: '', itemName: this.todoItem.name}
+      },
       computed: {
-        fieldEmpty: function() {
-          if(this.todoItem.name == "") {
+        nameTooShort: function() {
+          if(this.itemName.length < 3) {
             return true;
           }
           return false;
@@ -207,13 +210,23 @@
       },
       template:'<span>\
                   <form>\
-                    <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">\
-                    <button v-on:click="saveEditItem" v-bind:disabled="fieldEmpty">Modifier</button>\
+                    <input type="text" title="itemName" placeholder="item name" v-model="itemName">\
+                    <button v-on:click="saveEditItem" v-bind:disabled="nameTooShort">Modifier</button>\
+                    {{this.tooShortAlert}}\
                   </form>\
                 </span>',
       methods: {
         saveEditItem: function() {
           this.$emit('saveItem');
+        }
+      },
+      watch: {
+        itemName: function(value) {
+          if(this.itemName.length < 3) {
+            this.tooShortAlert = 'too short!';
+          } else {
+            this.tooShortAlert = '';
+          };
         }
       }
     });
