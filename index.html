@@ -67,12 +67,7 @@
   </script>
 
   <script>
-    // Vue.component('test-global-cmp', {
-    //   template: '<div>Composant de test</div>'
-    // });
 
-    // var myCmp = {template: '<p>Composant local</p>'};
-    //
     Vue.component('todolist', {
       props: ['todolist'],
       template:'\
@@ -163,7 +158,7 @@
                      - <i class="fa fa-trash-o" aria-hidden="true" id="show-modal" @click="showModal = true"></i>\
                     <modal v-if="showModal" @close="showModal = false">\
                       <h3 slot="header">Confirmer la suppression ?</h3>\
-                      <div slot="body">La tache "{{todoItem.name}}" va être definitivement supprimée</div>\
+                      <div slot="body">La tache "{{todoItem.name | shorten}}" va être definitivement supprimée</div>\
                       <p slot="footer">\
                         <button class="modal-default-button" @click="showModal = false">\
                           Annuler\
@@ -182,6 +177,14 @@
         deleteItem: function() {
           this.showModal = false;
           this.$emit('deleteItem');
+        }
+      },
+      filters: {
+        shorten: function(value) {
+          if(value.length > 10) {
+            return value.slice(0, 7) + '...'
+          }
+          return value
         }
       }
     });
