@@ -24,7 +24,7 @@
                 Add New Item:
               </label>
                 <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">
-              <button type="submit">Ajouter</button>
+              <button type="submit" v-bind:disabled="fieldEmpty">Ajouter</button>
             </form>
           </div>
         </ul>
@@ -197,10 +197,18 @@
 
     Vue.component('item-form-cmp', {
       props: ['todoItem'],
+      computed: {
+        fieldEmpty: function() {
+          if(this.todoItem.name == "") {
+            return true;
+          }
+          return false;
+        }
+      },
       template:'<span>\
                   <form>\
                     <input type="text" title="itemName" placeholder="item name" v-model="todoItem.name">\
-                    <button v-on:click="saveEditItem">Modifier</button>\
+                    <button v-on:click="saveEditItem" v-bind:disabled="fieldEmpty">Modifier</button>\
                   </form>\
                 </span>',
       methods: {
@@ -223,6 +231,14 @@
         todoItems: [],
         // active: false,
         activeTodo: 0
+      },
+      computed: {
+        fieldEmpty: function() {
+          if(this.todoItem.name == "") {
+            return true;
+          };
+          return false;
+        }
       },
       created: function() {
         // let ajaxUrlLocal = 'http://localhost:3000/api/todos/todos/1/items';
